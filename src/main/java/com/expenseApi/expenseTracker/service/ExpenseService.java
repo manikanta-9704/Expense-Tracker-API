@@ -3,32 +3,30 @@ package com.expenseApi.expenseTracker.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.expenseApi.expenseTracker.entity.Expense;
-import com.expenseApi.expenseTracker.enums.ExpenseType;
+//import com.expenseApi.expenseTracker.enums.ExpenseType;
 import com.expenseApi.expenseTracker.repository.ExpenseRepository;
 
 @Service
 public class ExpenseService {
+@Autowired
+    ExpenseRepository expenseRepository;
 
-    private final ExpenseRepository expenseRepository;
-
-    public ExpenseService(ExpenseRepository expenseRepository) {
-        this.expenseRepository = expenseRepository;
-    }
+//    public ExpenseService(ExpenseRepository expenseRepository) {
+//        this.expenseRepository = expenseRepository;
+//    }
 
     // Add Expense
-    public Expense addExpense(
-            String description,
-            double amount,
-            ExpenseType expenseType) {
+    public Expense addExpense(Expense expense) {
 
-        Expense expense = new Expense(
-                description,
-                amount,
-                expenseType
-        );
+//        Expense expense = new Expense(
+//                description,
+//                amount,
+//                expenseType
+//        );
 
         return expenseRepository.save(expense);
     }
@@ -47,13 +45,9 @@ public class ExpenseService {
     }
 
     // Modify Expense
-    public Expense modifyExpense(
-            int expenseId,
-            String description,
-            double amount,
-            ExpenseType expenseType) {
+    public Expense modifyExpense(Expense expense,Integer expenseId) {
 
-        Expense expense = expenseRepository
+        Expense exp = expenseRepository
                 .findById(expenseId)
                 .orElse(null);
 
@@ -61,9 +55,9 @@ public class ExpenseService {
             return null;
         }
 
-        expense.setDescription(description);
-        expense.setAmount(amount);
-        expense.setExpenseType(expenseType);
+        exp.setAmount(expense.getAmount());
+        exp.setDescription(expense.getDescription());
+        exp.setExpenseType(expense.getExpenseType());
 
         return expenseRepository.save(expense);
     }

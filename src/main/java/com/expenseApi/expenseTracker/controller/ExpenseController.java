@@ -2,7 +2,7 @@ package com.expenseApi.expenseTracker.controller;
 
 import java.util.List;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,26 +16,23 @@ import com.expenseApi.expenseTracker.entity.Expense;
 import com.expenseApi.expenseTracker.service.ExpenseService;
 
 
-
+//initially recieves the request
 @RestController
-@RequestMapping("/api/expenses")
+@RequestMapping("/api")
 public class ExpenseController {
-
-    private final ExpenseService expenseService;
-
-    public ExpenseController(ExpenseService expenseService) {
-        this.expenseService = expenseService;
-    }
+     @Autowired
+     ExpenseService expenseService;
+//no need to create an constructor just by using @autowired we can achieve this
+//    public ExpenseController(ExpenseService expenseService) {
+//        this.expenseService = expenseService;
+//    }
 
     // Add Expense
-    @PostMapping
+    //direct entity acceptance (no dto)
+    @PostMapping("/addexpense")
     public Expense addExpense(@RequestBody Expense expense) {
 
-        return expenseService.addExpense(
-                expense.getDescription(),
-                expense.getAmount(),
-                expense.getExpenseType()
-        );
+        return expenseService.addExpense(expense);
     }
 
     // View All Expenses
@@ -46,7 +43,7 @@ public class ExpenseController {
     }
 
     // View Expense By ID
-    @GetMapping("/{id}")
+    @GetMapping("expense/{id}")
     public Expense findExpenseById(@PathVariable int id) {
 
         return expenseService.findExpenseById(id);
@@ -58,12 +55,7 @@ public class ExpenseController {
             @PathVariable int id,
             @RequestBody Expense expense) {
 
-        return expenseService.modifyExpense(
-                id,
-                expense.getDescription(),
-                expense.getAmount(),
-                expense.getExpenseType()
-        );
+        return expenseService.modifyExpense(expense,id);
     }
 
     // Delete Expense

@@ -23,11 +23,11 @@ public class Expense {
 	    public Expense() {
 	    }
 
-	    public Expense(String description, double amount, ExpenseType expenseType) {
-	        this.description = description;
-	        this.amount = amount;
-	        this.expenseType = expenseType;
-	    }
+//	    public Expense(String description, double amount, ExpenseType expenseType) {
+//	        this.description = description;
+//	        this.amount = amount;
+//	        this.expenseType = expenseType;
+//	    }
 
 	    public int getExpenseId() {
 	        return expenseId;
