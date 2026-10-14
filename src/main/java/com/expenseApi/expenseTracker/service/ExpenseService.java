@@ -1,80 +1,103 @@
 package com.expenseApi.expenseTracker.service;
 
-
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.expenseApi.expenseTracker.entity.Expense;
-//import com.expenseApi.expenseTracker.enums.ExpenseType;
+import com.expenseApi.expenseTracker.entity.User;
 import com.expenseApi.expenseTracker.repository.ExpenseRepository;
+import com.expenseApi.expenseTracker.repository.UserRepo;
 
 @Service
 public class ExpenseService {
-@Autowired
-    ExpenseRepository expenseRepository;
 
-//    public ExpenseService(ExpenseRepository expenseRepository) {
-//        this.expenseRepository = expenseRepository;
-//    }
+    private final ExpenseRepository expenseRepository;
+    private final UserRepo userRepo;
 
-    // Add Expense
-    public Expense addExpense(Expense expense) {
+    public ExpenseService(
+            ExpenseRepository expenseRepository,
+            UserRepo userRepo) {
+        this.expenseRepository = expenseRepository;
+        this.userRepo = userRepo;
+    }
 
-//        Expense expense = new Expense(
-//                description,
-//                amount,
-//                expenseType
-//        );
+    // Add expense for a specific user
+    public Expense addExpense(Expense expense, Integer userId) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        expense.setUser(user);
 
         return expenseRepository.save(expense);
     }
 
-    // View All Expenses
-    public List<Expense> viewAllExpenses() {
-
-        return expenseRepository.findAll();
+    // Retrieve expenses for a specific user
+    public List<Expense> viewAllExpenses(Integer userId) {
+        return expenseRepository.findByUser_Id(userId);
     }
 
-    // Find Expense By ID
-    public Expense findExpenseById(int expenseId) {
+    // Retrieve one expense belonging to a specific user
+    public Expense findExpenseById(
+            int expenseId,
+            Integer userId) {
 
-        return expenseRepository.findById(expenseId)
+        return expenseRepository
+                .findByExpenseIdAndUser_Id(expenseId, userId)
                 .orElse(null);
     }
 
-    // Modify Expense
-    public Expense modifyExpense(Expense expense,Integer expenseId) {
+    // Update an expense belonging to a specific user
+    @Transactional
+    public Expense modifyExpense(
+            Expense updatedExpense,
+            Integer expenseId,
+            Integer userId) {
 
-        Expense exp = expenseRepository
-                .findById(expenseId)
+        Expense existingExpense = expenseRepository
+                .findByExpenseIdAndUser_Id(expenseId, userId)
                 .orElse(null);
 
-        if (expense == null) {
+        if (existingExpense == null) {
             return null;
         }
 
-        exp.setAmount(expense.getAmount());
-        exp.setDescription(expense.getDescription());
-        exp.setExpenseType(expense.getExpenseType());
+        existingExpense.setDescription(
+                updatedExpense.getDescription());
 
-        return expenseRepository.save(expense);
+        existingExpense.setAmount(
+                updatedExpense.getAmount());
+
+        existingExpense.setExpenseType(
+                updatedExpense.getExpenseType());
+
+        return expenseRepository.save(existingExpense);
     }
 
-    // Delete Expense
-    public boolean deleteExpense(int expenseId) {
+    // Delete one expense belonging to a specific user
+    public boolean deleteExpense(
+            int expenseId,
+            Integer userId) {
 
         Expense expense = expenseRepository
-                .findById(expenseId)
+                .findByExpenseIdAndUser_Id(expenseId, userId)
                 .orElse(null);
 
         if (expense == null) {
             return false;
         }
 
-        expenseRepository.deleteById(expenseId);
+        expenseRepository.delete(expense);
 
         return true;
+    }
+
+    // Delete all expenses belonging to a specific user
+    @Transactional
+    public void deleteAllExpenses(Integer userId) {
+        expenseRepository.deleteByUser_Id(userId);
     }
 }

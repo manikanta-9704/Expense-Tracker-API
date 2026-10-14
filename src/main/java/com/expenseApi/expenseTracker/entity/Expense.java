@@ -1,66 +1,79 @@
 package com.expenseApi.expenseTracker.entity;
+
 import com.expenseApi.expenseTracker.enums.ExpenseType;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "expense_class")
 public class Expense {
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private int expenseId;
 
-	    private String description;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int expenseId;
 
-	    private double amount;
+    private String description;
 
-	    @Enumerated(EnumType.STRING)
-	    private ExpenseType expenseType;
+    private double amount;
 
-	    public Expense() {
-	    }
+    @Enumerated(EnumType.STRING)
+    private ExpenseType expenseType;
 
-//	    public Expense(String description, double amount, ExpenseType expenseType) {
-//	        this.description = description;
-//	        this.amount = amount;
-//	        this.expenseType = expenseType;
-//	    }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-	    public int getExpenseId() {
-	        return expenseId;
-	    }
+    public Expense() {
+    }
 
-	    public void setExpenseId(int expenseId) {
-	        this.expenseId = expenseId;
-	    }
+    public int getExpenseId() {
+        return expenseId;
+    }
 
-	    public String getDescription() {
-	        return description;
-	    }
+    public void setExpenseId(int expenseId) {
+        this.expenseId = expenseId;
+    }
 
-	    public void setDescription(String description) {
-	        this.description = description;
-	    }
+    public String getDescription() {
+        return description;
+    }
 
-	    public double getAmount() {
-	    
-	        return amount;
-	    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	    public void setAmount(double amount) {
-	    	if(amount>0) {
-	        this.amount = amount;
-	    	}
-	    }
+    public double getAmount() {
+        return amount;
+    }
 
-	    public ExpenseType getExpenseType() {
-	        return expenseType;
-	    }
+    public void setAmount(double amount) {
+        if (amount > 0) {
+            this.amount = amount;
+        }
+    }
 
-	    public void setExpenseType(ExpenseType expenseType) {
-	        this.expenseType = expenseType;
-	    }
+    public ExpenseType getExpenseType() {
+        return expenseType;
+    }
+
+    public void setExpenseType(ExpenseType expenseType) {
+        this.expenseType = expenseType;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

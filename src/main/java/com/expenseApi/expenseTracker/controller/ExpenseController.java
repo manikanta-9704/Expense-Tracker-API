@@ -2,72 +2,98 @@ package com.expenseApi.expenseTracker.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.expenseApi.expenseTracker.entity.Expense;
 import com.expenseApi.expenseTracker.service.ExpenseService;
 
-
-//initially recieves the request
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ExpenseController {
-     @Autowired
-     ExpenseService expenseService;
-//no need to create an constructor just by using @autowired we can achieve this
-//    public ExpenseController(ExpenseService expenseService) {
-//        this.expenseService = expenseService;
-//    }
 
-    // Add Expense
-    //direct entity acceptance (no dto)
+    private final ExpenseService expenseService;
+
+    public ExpenseController(ExpenseService expenseService) {
+        this.expenseService = expenseService;
+    }
+
+    // Add expense for a user
     @PostMapping("/addexpense")
-    public Expense addExpense(@RequestBody Expense expense) {
-
-        return expenseService.addExpense(expense);
-    }
-
-    // View All Expenses
-    @GetMapping
-    public List<Expense> viewAllExpenses() {
-
-        return expenseService.viewAllExpenses();
-    }
-
-    // View Expense By ID
-    @GetMapping("expense/{id}")
-    public Expense findExpenseById(@PathVariable int id) {
-
-        return expenseService.findExpenseById(id);
-    }
-
-    // Modify Expense
-    @PutMapping("/{id}")
-    public Expense modifyExpense(
-            @PathVariable int id,
+    public ResponseEntity<Expense> addExpense(
+            @RequestHeader("X-User-Id") Integer userId,
             @RequestBody Expense expense) {
 
-        return expenseService.modifyExpense(expense,id);
+        Expense savedExpense = expenseService.addExpense(expense, userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedExpense);
     }
 
-    // Delete Expense
-    @DeleteMapping("/{id}")
-    public String deleteExpense(@PathVariable int id) {
+    // View all expenses belonging to a user
+    @GetMapping("/viewallexpenses")
+    public List<Expense> viewAllExpenses(
+            @RequestHeader("X-User-Id") Integer userId) {
 
-        boolean deleted = expenseService.deleteExpense(id);
+        return expenseService.viewAllExpenses(userId);
+    }
 
-        if (deleted) {
-            return "Expense deleted successfully.";
+    // View a specific expense belonging to a user
+    @GetMapping("/viewexpense/{id}")
+    public ResponseEntity<Expense> findExpenseById(
+            @PathVariable int id,
+            @RequestHeader("X-User-Id") Integer userId) {
+
+        Expense expense = expenseService.findExpenseById(id, userId);
+
+        if (expense == null) {
+            return ResponseEntity.notFound().build();
         }
 
-        return "Expense not found.";
+        return ResponseEntity.ok(expense);
+    }
+
+    // Update an expense belonging to a user
+    @PutMapping("/modifyexpense/{id}")
+    public ResponseEntity<Expense> modifyExpense(
+            @PathVariable int id,
+            @RequestHeader("X-User-Id") Integer userId,
+            @RequestBody Expense expense) {
+
+        Expense updatedExpense =
+                expenseService.modifyExpense(expense, id, userId);
+
+        if (updatedExpense == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(updatedExpense);
+    }
+
+    // Delete a specific expense belonging to a user
+    @DeleteMapping("/deleteexpense/{id}")
+    public ResponseEntity<String> deleteExpense(
+            @PathVariable int id,
+            @RequestHeader("X-User-Id") Integer userId) {
+
+        boolean deleted = expenseService.deleteExpense(id, userId);
+
+        if (deleted) {
+            return ResponseEntity.ok("Expense deleted successfully.");
+        }
+
+        return ResponseEntity.notFound()
+                .build();
+    }
+
+    // Delete all expenses belonging to a user
+    @DeleteMapping("/deleteallexpenses")
+    public ResponseEntity<String> deleteAllExpenses(
+            @RequestHeader("X-User-Id") Integer userId) {
+
+        expenseService.deleteAllExpenses(userId);
+
+        return ResponseEntity.ok("All your expenses have been deleted.");
     }
 }
