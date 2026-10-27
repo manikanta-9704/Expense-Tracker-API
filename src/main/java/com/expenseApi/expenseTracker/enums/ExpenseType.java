@@ -9,6 +9,7 @@ package com.expenseApi.expenseTracker.enums;
 	    BILLS,
 	    ENTERTAINMENT,
 	    MEDICAL,
+	    TRANSPORT,
 	    OTHER
 	}
 
