@@ -1,6 +1,8 @@
-FROM maven:3.9.10-eclipse-temurin-25 AS build
+FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
 COPY pom.xml .
 COPY src ./src
