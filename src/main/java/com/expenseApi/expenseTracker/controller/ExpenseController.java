@@ -4,46 +4,75 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.expenseApi.expenseTracker.entity.Expense;
+import com.expenseApi.expenseTracker.entity.User;
+import com.expenseApi.expenseTracker.repository.UserRepo;
 import com.expenseApi.expenseTracker.service.ExpenseService;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "https://your-expense-tracker.vercel.app"
+})
 public class ExpenseController {
 
     private final ExpenseService expenseService;
+    private final UserRepo userRepo;
 
-    public ExpenseController(ExpenseService expenseService) {
+    public ExpenseController(
+            ExpenseService expenseService,
+            UserRepo userRepo) {
         this.expenseService = expenseService;
+        this.userRepo = userRepo;
     }
 
-    // Add expense for a user
+    // Get authenticated user's database ID
+    private Integer getAuthenticatedUserId(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        User user = userRepo.findByEmailIgnoreCase(email)
+                .orElseThrow(() ->
+                    new RuntimeException("Authenticated user not found"));
+
+        return user.getId();
+    }
+
+    // Add expense
     @PostMapping("/addexpense")
     public ResponseEntity<Expense> addExpense(
-            @RequestHeader("X-User-Id") Integer userId,
+            Authentication authentication,
             @RequestBody Expense expense) {
 
-        Expense savedExpense = expenseService.addExpense(expense, userId);
+        Integer userId = getAuthenticatedUserId(authentication);
+
+        Expense savedExpense =
+                expenseService.addExpense(expense, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedExpense);
     }
 
-    // View all expenses belonging to a user
+    // View all expenses
     @GetMapping("/viewallexpenses")
     public List<Expense> viewAllExpenses(
-            @RequestHeader("X-User-Id") Integer userId) {
+            Authentication authentication) {
+
+        Integer userId = getAuthenticatedUserId(authentication);
 
         return expenseService.viewAllExpenses(userId);
     }
 
-    // View a specific expense belonging to a user
+    // View one expense
     @GetMapping("/viewexpense/{id}")
     public ResponseEntity<Expense> findExpenseById(
             @PathVariable int id,
-            @RequestHeader("X-User-Id") Integer userId) {
+            Authentication authentication) {
+
+        Integer userId = getAuthenticatedUserId(authentication);
 
         Expense expense = expenseService.findExpenseById(id, userId);
 
@@ -54,12 +83,14 @@ public class ExpenseController {
         return ResponseEntity.ok(expense);
     }
 
-    // Update an expense belonging to a user
+    // Update expense
     @PutMapping("/modifyexpense/{id}")
     public ResponseEntity<Expense> modifyExpense(
             @PathVariable int id,
-            @RequestHeader("X-User-Id") Integer userId,
+            Authentication authentication,
             @RequestBody Expense expense) {
+
+        Integer userId = getAuthenticatedUserId(authentication);
 
         Expense updatedExpense =
                 expenseService.modifyExpense(expense, id, userId);
@@ -71,11 +102,13 @@ public class ExpenseController {
         return ResponseEntity.ok(updatedExpense);
     }
 
-    // Delete a specific expense belonging to a user
+    // Delete one expense
     @DeleteMapping("/deleteexpense/{id}")
     public ResponseEntity<String> deleteExpense(
             @PathVariable int id,
-            @RequestHeader("X-User-Id") Integer userId) {
+            Authentication authentication) {
+
+        Integer userId = getAuthenticatedUserId(authentication);
 
         boolean deleted = expenseService.deleteExpense(id, userId);
 
@@ -83,14 +116,15 @@ public class ExpenseController {
             return ResponseEntity.ok("Expense deleted successfully.");
         }
 
-        return ResponseEntity.notFound()
-                .build();
+        return ResponseEntity.notFound().build();
     }
 
-    // Delete all expenses belonging to a user
+    // Delete all expenses
     @DeleteMapping("/deleteallexpenses")
     public ResponseEntity<String> deleteAllExpenses(
-            @RequestHeader("X-User-Id") Integer userId) {
+            Authentication authentication) {
+
+        Integer userId = getAuthenticatedUserId(authentication);
 
         expenseService.deleteAllExpenses(userId);
 
