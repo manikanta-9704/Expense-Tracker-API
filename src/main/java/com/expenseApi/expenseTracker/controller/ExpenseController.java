@@ -16,7 +16,7 @@ import com.expenseApi.expenseTracker.service.ExpenseService;
 @RequestMapping("/api")
 @CrossOrigin(origins = {
     "http://localhost:5173",
-    "https://your-expense-tracker.vercel.app"
+    "https://expense-tracker-frontend-seven-pied.vercel.app"
 })
 public class ExpenseController {
 
