@@ -27,7 +27,7 @@ public class SecurityConfig {
 
 	    configuration.setAllowedOrigins(
 	        List.of("http://localhost:5173",
-	        		"https://your-expense-tracker.vercel.app"
+	        		"https://expense-tracker-frontend-seven-pied.vercel.app/"
 )
 	    );
 
